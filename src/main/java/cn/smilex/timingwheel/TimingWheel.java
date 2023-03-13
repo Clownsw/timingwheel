@@ -1,7 +1,6 @@
-package yychen.demo.timingwheel;
+package cn.smilex.timingwheel;
 
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @Author: siran.yao
@@ -85,7 +84,6 @@ public class TimingWheel {
             //当前时间轮可以容纳该任务 加入时间槽
             Long virtualId = expiration / tickMs;
             int index = (int) (virtualId % wheelSize);
-            System.out.println("tickMs:" + tickMs + "------index:" + index + "------expiration:" + expiration);
             TimerTaskList timerTaskList = timerTaskLists[index];
             timerTaskList.addTask(timerTask);
             if (timerTaskList.setExpiration(virtualId * tickMs)) {

@@ -1,19 +1,19 @@
-package yychen.demo.timingwheel;
+package cn.smilex.timingwheel;
 
 /**
- * @Author: siran.yao
- * @time: 2020/5/8:上午11:13
+ * @author siran.yao
+ * @date 2020/5/8:上午11:13
  */
-public class TimerTask{
+public class TimerTask<T> {
     /**
      * 延迟时间
      */
-    private long delayMs;
+    private final long delayMs;
 
     /**
      * 任务
      */
-    private Runnable task;
+    private final Runnable task;
 
     /**
      * 时间槽
@@ -23,19 +23,19 @@ public class TimerTask{
     /**
      * 下一个节点
      */
-    protected TimerTask next;
+    protected TimerTask<T> next;
 
     /**
      * 上一个节点
      */
-    protected TimerTask prev;
+    protected TimerTask<T> prev;
 
     /**
      * 描述
      */
     public String desc;
 
-    public TimerTask(Runnable task,long delayMs) {
+    public TimerTask(Task<T> task, long delayMs) {
         this.delayMs = System.currentTimeMillis() + delayMs;
         this.task = task;
         this.timerTaskList = null;
