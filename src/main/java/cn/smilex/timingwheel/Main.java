@@ -14,7 +14,15 @@ public class Main {
         SYSTEM_TIMER.addTask(
                 new CronTask(
                         () -> {
-                            System.out.println("我是每两秒执行一次");
+                            log.info("-每一秒执行一次, {}", System.currentTimeMillis());
+                        }, "0/1 * * * * ?"
+                ).toTimerTask()
+        );
+
+        SYSTEM_TIMER.addTask(
+                new CronTask(
+                        () -> {
+                            log.info("--每两秒执行一次, {}", System.currentTimeMillis());
                         }, "0/2 * * * * ?"
                 ).toTimerTask()
         );
@@ -22,7 +30,15 @@ public class Main {
         SYSTEM_TIMER.addTask(
                 new CronTask(
                         () -> {
-                            System.out.println("我是每两分钟执行一次");
+                            log.info("----每一分钟执行一次, {}", System.currentTimeMillis());
+                        }, "0 0/1 * * * ?"
+                ).toTimerTask()
+        );
+
+        SYSTEM_TIMER.addTask(
+                new CronTask(
+                        () -> {
+                            log.info("-----每两分钟执行一次, {}", System.currentTimeMillis());
                         }, "0 0/2 * * * ?"
                 ).toTimerTask()
         );
@@ -30,7 +46,7 @@ public class Main {
         SYSTEM_TIMER.addTask(
                 new CronTask(
                         () -> {
-                            System.out.println("每天上午10点，下午2点，4点");
+                            log.info("--------每天上午10点，下午2点，4点");
                         },
                         "0 0 10,14,16 * * ?"
                 ).toTimerTask()
