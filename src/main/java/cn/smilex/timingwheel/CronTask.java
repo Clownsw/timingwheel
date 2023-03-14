@@ -49,19 +49,18 @@ public class CronTask {
                         this.task,
                         new Tuple<>(this.systemTimer, this),
                         (t, v, c) -> {
-                            v.getLeft()
-                                    .addTask(
-                                            new TimerTask<>(
-                                                    new Task<>(
-                                                            TaskType.CRON,
-                                                            t,
-                                                            new Tuple<>(v.getLeft(), v.getRight()),
-                                                            c
-                                                    ),
-                                                    v.getRight()
-                                                            .nextDelayMs()
-                                            )
-                                    );
+                            TimerTask<Tuple<SystemTimer, CronTask>> nextTask = new TimerTask<>(
+                                    new Task<>(
+                                            TaskType.CRON,
+                                            t,
+                                            new Tuple<>(v.getLeft(), v.getRight()),
+                                            c
+                                    ),
+                                    v.getRight()
+                                            .nextDelayMs()
+                            );
+
+                            v.getLeft().addTask(nextTask);
                         }
                 ),
                 delayMs
