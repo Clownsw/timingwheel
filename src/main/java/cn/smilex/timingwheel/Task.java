@@ -1,31 +1,28 @@
 package cn.smilex.timingwheel;
 
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * @author smilex
  */
+@Slf4j
+@Data
 public class Task<T> implements Runnable {
-    private final TaskType taskType;
-    private final Runnable task;
     private final T data;
-    private final CronTaskCallBackFunction<T> callBack;
+    private final Runnable runnable;
 
-    public Task(TaskType taskType, Runnable task, T data, CronTaskCallBackFunction<T> callBack) {
-        this.taskType = taskType;
-        this.task = task;
+    public Task(T data, Runnable runnable) {
         this.data = data;
-        this.callBack = callBack;
+        this.runnable = runnable;
     }
 
     @Override
     public void run() {
-        // 计算并添加下一次任务执行
-        if (taskType == TaskType.CRON) {
-            this.callBack.handle(this, this.data, this.callBack);
-        }
-
         try {
-            this.task.run();
+            this.runnable.run();
         } catch (Exception ignore) {
+
         }
     }
 }

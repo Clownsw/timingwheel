@@ -1,14 +1,17 @@
 package cn.smilex.timingwheel;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 /**
- * @Author: siran.yao
- * @time: 2020/5/8:上午11:13
+ * @author siran.yao
+ * @date 2020/5/8:上午11:13
  */
+@Slf4j
 public class TimerTaskList implements Delayed {
     /**
      * 过期时间
@@ -18,7 +21,7 @@ public class TimerTaskList implements Delayed {
     /**
      * 根节点
      */
-    private TimerTask root = new TimerTask( null,-1L);
+    private TimerTask root = new TimerTask(null, -1L);
 
     {
         root.prev = root;
@@ -73,8 +76,8 @@ public class TimerTaskList implements Delayed {
     /**
      * 重新分配
      */
-    public synchronized void flush(Consumer<TimerTask> flush) {
-        TimerTask timerTask = root.next;
+    public synchronized void flush(Consumer<TimerTask<?>> flush) {
+        TimerTask<?> timerTask = root.next;
         while (!timerTask.equals(root)) {
             this.removeTask(timerTask);
             flush.accept(timerTask);

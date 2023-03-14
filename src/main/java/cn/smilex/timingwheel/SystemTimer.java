@@ -1,9 +1,12 @@
 package cn.smilex.timingwheel;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author siran.yao
@@ -11,6 +14,7 @@ import java.util.concurrent.TimeUnit;
  * 对时间轮的包装
  */
 @SuppressWarnings("InfiniteLoopStatement")
+@Slf4j
 public class SystemTimer {
     /**
      * 底层时间轮
@@ -26,6 +30,8 @@ public class SystemTimer {
      * 过期任务执行线程
      */
     private final ExecutorService workerThreadPool;
+
+    private final ReentrantLock lock = new ReentrantLock();
 
     /**
      * 构造函数
@@ -48,10 +54,30 @@ public class SystemTimer {
     /**
      * 添加任务
      */
+    @SuppressWarnings("unchecked")
     public void addTask(TimerTask<?> timerTask) {
-        //添加失败任务直接执行
-        if (!timeWheel.addTask(timerTask)) {
-            workerThreadPool.submit(timerTask.getTask());
+        try {
+            lock.lock();
+            // 添加失败任务直接执行
+            if (!timeWheel.addTask(timerTask)) {
+                if (timerTask.getTask() instanceof Task) {
+                    try {
+                        Task<CronTask> tmpTask = (Task<CronTask>) timerTask.getTask();
+
+                        Task<CronTask> nextTask = new Task<>(tmpTask.getData(), tmpTask.getRunnable());
+                        TimerTask<CronTask> nextTimerTask = new TimerTask<>(nextTask, tmpTask.getData().nextDelayMs());
+                        addTask(nextTimerTask);
+                    } catch (Exception e) {
+                        log.error("", e);
+                    }
+                }
+
+                workerThreadPool.submit(timerTask.getTask());
+            }
+        } catch (Exception e) {
+            log.error("", e);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -60,6 +86,7 @@ public class SystemTimer {
      */
     private void advanceClock(long timeout) {
         try {
+            lock.lock();
             TimerTaskList timerTaskList = delayQueue.poll(timeout, TimeUnit.MILLISECONDS);
             if (timerTaskList != null) {
                 //推进时间
@@ -69,6 +96,8 @@ public class SystemTimer {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            lock.unlock();
         }
     }
 }

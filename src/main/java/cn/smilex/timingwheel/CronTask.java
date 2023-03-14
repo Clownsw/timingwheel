@@ -19,51 +19,27 @@ public class CronTask {
     private static final CronDefinition CRON_DEFINITION = CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING);
     private static final CronParser CRON_PARSER = new CronParser(CRON_DEFINITION);
 
-    private final SystemTimer systemTimer;
     private final Runnable task;
     private final ExecutionTime executionTime;
-    private ZonedDateTime zonedDateTime = null;
 
-    public CronTask(SystemTimer systemTimer, Runnable task, String cronString) {
-        this.systemTimer = systemTimer;
+    public CronTask(Runnable task, String cronString) {
         this.task = task;
         this.executionTime = ExecutionTime.forCron(CRON_PARSER.parse(cronString));
     }
 
     public long nextDelayMs() {
-        if (this.zonedDateTime == null) {
-            this.zonedDateTime = ZonedDateTime.now();
-        }
-
-        this.zonedDateTime = this.executionTime.nextExecution(this.zonedDateTime).get();
-        return Timestamp.valueOf(this.zonedDateTime.toLocalDateTime())
-                .getTime() - System.currentTimeMillis();
+        ZonedDateTime zonedDateTime = this.executionTime.nextExecution(ZonedDateTime.now()).get();
+        Timestamp timestamp = Timestamp.valueOf(zonedDateTime.toLocalDateTime());
+        return timestamp.getTime() - System.currentTimeMillis();
     }
 
-    public TimerTask<Tuple<SystemTimer, CronTask>> toTimerTask() {
-        final long delayMs = nextDelayMs();
-
+    public TimerTask<CronTask> toTimerTask() {
         return new TimerTask<>(
                 new Task<>(
-                        TaskType.CRON,
-                        this.task,
-                        new Tuple<>(this.systemTimer, this),
-                        (t, v, c) -> {
-                            TimerTask<Tuple<SystemTimer, CronTask>> nextTask = new TimerTask<>(
-                                    new Task<>(
-                                            TaskType.CRON,
-                                            t,
-                                            new Tuple<>(v.getLeft(), v.getRight()),
-                                            c
-                                    ),
-                                    v.getRight()
-                                            .nextDelayMs()
-                            );
-
-                            v.getLeft().addTask(nextTask);
-                        }
+                        this,
+                        this.task
                 ),
-                delayMs
+                nextDelayMs()
         );
     }
 }
