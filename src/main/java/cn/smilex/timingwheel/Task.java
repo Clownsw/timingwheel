@@ -18,10 +18,14 @@ public class Task<T> implements Runnable {
 
     @Override
     public void run() {
-        this.task.run();
-
+        // 计算并添加下一次任务执行
         if (taskType == TaskType.CRON) {
             this.callBack.handle(this, this.data, this.callBack);
+        }
+
+        try {
+            this.task.run();
+        } catch (Exception ignore) {
         }
     }
 }
