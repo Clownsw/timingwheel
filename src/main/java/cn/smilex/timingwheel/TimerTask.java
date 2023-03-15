@@ -35,7 +35,7 @@ public class TimerTask<T> {
      */
     public String desc;
 
-    public TimerTask(Task<T> task, long delayMs) {
+    public TimerTask(Task<T, ?> task, long delayMs) {
         this.delayMs = System.currentTimeMillis() + delayMs;
         this.task = task;
         this.timerTaskList = null;

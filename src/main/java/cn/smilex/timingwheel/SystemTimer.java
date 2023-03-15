@@ -54,7 +54,7 @@ public class SystemTimer {
     /**
      * 添加任务
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void addTask(TimerTask<?> timerTask) {
         try {
             lock.lock();
@@ -62,10 +62,10 @@ public class SystemTimer {
             if (!timeWheel.addTask(timerTask)) {
                 if (timerTask.getTask() instanceof Task) {
                     try {
-                        Task<CronTask> tmpTask = (Task<CronTask>) timerTask.getTask();
+                        Task<CronTask<?>, ?> tmpTask = (Task<CronTask<?>, ?>) timerTask.getTask();
 
-                        Task<CronTask> nextTask = new Task<>(tmpTask.getData(), tmpTask.getRunnable());
-                        TimerTask<CronTask> nextTimerTask = new TimerTask<>(nextTask, tmpTask.getData().nextDelayMs());
+                        Task<CronTask<?>, ?> nextTask = new Task(tmpTask.getData(), tmpTask.getUserData(), tmpTask.getRunnable());
+                        TimerTask<CronTask<?>> nextTimerTask = new TimerTask<>(nextTask, tmpTask.getData().nextDelayMs());
                         addTask(nextTimerTask);
                     } catch (Exception e) {
                         log.error("", e);

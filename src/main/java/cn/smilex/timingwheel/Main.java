@@ -12,42 +12,51 @@ public class Main {
 
     public static void main(String[] args) {
         SYSTEM_TIMER.addTask(
-                new CronTask(
-                        () -> {
-                            log.info("-每一秒执行一次, {}", System.currentTimeMillis());
-                        }, "0/1 * * * * ?"
+                new CronTask<>(
+                        v -> {
+                            log.info("-每一秒执行一次, {}, v {}", System.currentTimeMillis(), v);
+                        },
+                        1,
+                        "0/1 * * * * ?"
                 ).toTimerTask()
         );
 
         SYSTEM_TIMER.addTask(
-                new CronTask(
-                        () -> {
-                            log.info("--每两秒执行一次, {}", System.currentTimeMillis());
-                        }, "0/2 * * * * ?"
+                new CronTask<>(
+                        v -> {
+                            log.info("--每两秒执行一次, {}, v {}", System.currentTimeMillis(), v);
+                        },
+                        2,
+                        "0/2 * * * * ?"
                 ).toTimerTask()
         );
 
         SYSTEM_TIMER.addTask(
-                new CronTask(
-                        () -> {
+                new CronTask<>(
+                        v -> {
                             log.info("----每一分钟执行一次, {}", System.currentTimeMillis());
-                        }, "0 0/1 * * * ?"
+                        },
+                        null,
+                        "0 0/1 * * * ?"
                 ).toTimerTask()
         );
 
         SYSTEM_TIMER.addTask(
-                new CronTask(
-                        () -> {
+                new CronTask<>(
+                        v -> {
                             log.info("-----每两分钟执行一次, {}", System.currentTimeMillis());
-                        }, "0 0/2 * * * ?"
+                        },
+                        null,
+                        "0 0/2 * * * ?"
                 ).toTimerTask()
         );
 
         SYSTEM_TIMER.addTask(
-                new CronTask(
-                        () -> {
+                new CronTask<>(
+                        v -> {
                             log.info("--------每天上午10点，下午2点，4点");
                         },
+                        null,
                         "0 0 10,14,16 * * ?"
                 ).toTimerTask()
         );
