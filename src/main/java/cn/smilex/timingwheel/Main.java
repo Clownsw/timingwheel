@@ -11,6 +11,11 @@ public class Main {
     static SystemTimer SYSTEM_TIMER = new SystemTimer();
 
     public static void main(String[] args) {
+        SYSTEM_TIMER.addTask(new TimerTask<>(
+                () -> System.out.println("过期任务测试"),
+                -1000
+        ));
+
         SYSTEM_TIMER.addTask(
                 new CronTask<>(
                         v -> {
