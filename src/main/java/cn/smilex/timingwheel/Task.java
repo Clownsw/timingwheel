@@ -26,7 +26,6 @@ public class Task<T, K> implements Runnable {
         try {
             this.runnable.accept(this.userData);
         } catch (Exception ignore) {
-
         }
     }
 }

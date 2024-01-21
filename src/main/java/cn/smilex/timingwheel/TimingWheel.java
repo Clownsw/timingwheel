@@ -12,22 +12,22 @@ public class TimingWheel {
     /**
      * 一个时间槽的范围
      */
-    private long tickMs;
+    private final long tickMs;
 
     /**
      * 时间轮大小
      */
-    private int wheelSize;
+    private final int wheelSize;
 
     /**
      * 时间跨度
      */
-    private long interval;
+    private final long interval;
 
     /**
      * 时间槽
      */
-    private TimerTaskList[] timerTaskLists;
+    private final TimerTaskList[] timerTaskLists;
 
     /**
      * 当前时间
@@ -42,7 +42,7 @@ public class TimingWheel {
     /**
      * 一个Timer只有一个delayQueue
      */
-    private DelayQueue<TimerTaskList> delayQueue;
+    private final DelayQueue<TimerTaskList> delayQueue;
 
     public TimingWheel(long tickMs, int wheelSize, long currentTime, DelayQueue<TimerTaskList> delayQueue) {
         this.currentTime = currentTime;
@@ -77,16 +77,17 @@ public class TimingWheel {
      */
     public boolean addTask(TimerTask timerTask) {
         long expiration = timerTask.getDelayMs();
-        //过期任务直接执行
+        // 过期任务直接执行
         if (expiration < currentTime + tickMs) {
             return false;
         } else if (expiration < currentTime + interval) {
-            //当前时间轮可以容纳该任务 加入时间槽
-            Long virtualId = expiration / tickMs;
-            int index = (int) (virtualId % wheelSize);
+            // 当前时间轮可以容纳该任务 加入时间槽
+            final int index = (int) ((expiration / tickMs) % wheelSize);
+
             TimerTaskList timerTaskList = timerTaskLists[index];
             timerTaskList.addTask(timerTask);
-            if (timerTaskList.setExpiration(virtualId * tickMs)) {
+
+            if (timerTaskList.setExpiration(expiration)) {
                 //添加到delayQueue中
                 delayQueue.offer(timerTaskList);
             }

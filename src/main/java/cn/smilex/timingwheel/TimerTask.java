@@ -1,5 +1,7 @@
 package cn.smilex.timingwheel;
 
+import lombok.Getter;
+
 /**
  * @author siran.yao
  * @date 2020/5/8:上午11:13
@@ -8,11 +10,13 @@ public class TimerTask<T> {
     /**
      * 延迟时间
      */
+    @Getter
     private final long delayMs;
 
     /**
      * 任务
      */
+    @Getter
     private final Runnable task;
 
     /**
@@ -41,14 +45,6 @@ public class TimerTask<T> {
         this.timerTaskList = null;
         this.next = null;
         this.prev = null;
-    }
-
-    public Runnable getTask() {
-        return task;
-    }
-
-    public long getDelayMs() {
-        return delayMs;
     }
 
     @Override

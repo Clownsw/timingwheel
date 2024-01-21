@@ -21,7 +21,7 @@ public class TimerTaskList implements Delayed {
     /**
      * 根节点
      */
-    private TimerTask root = new TimerTask(null, -1L);
+    private final TimerTask root = new TimerTask(null, -1L);
 
     {
         root.prev = root;
