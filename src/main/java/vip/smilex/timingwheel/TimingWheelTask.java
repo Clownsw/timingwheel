@@ -29,21 +29,9 @@ public class TimingWheelTask<T> {
      */
     protected TimingWheelTaskList timingWheelTaskList;
 
-    /**
-     * 下一个节点
-     */
-    protected TimingWheelTask<T> next;
-
-    /**
-     * 上一个节点
-     */
-    protected TimingWheelTask<T> prev;
-
     public TimingWheelTask(Runnable task, long delayMs) {
         this.delayMs = System.currentTimeMillis() + delayMs;
         this.task = task;
         this.timingWheelTaskList = null;
-        this.next = null;
-        this.prev = null;
     }
 }

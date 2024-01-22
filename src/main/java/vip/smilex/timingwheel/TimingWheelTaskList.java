@@ -2,6 +2,8 @@ package vip.smilex.timingwheel;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -16,20 +18,16 @@ import java.util.function.Consumer;
  */
 @Slf4j
 public final class TimingWheelTaskList implements Delayed {
+
     /**
      * 过期时间
      */
     private final AtomicLong expiration = new AtomicLong(-1L);
 
     /**
-     * 根节点
+     * 时间轮任务
      */
-    private final TimingWheelTask root = new TimingWheelTask(null, -1L);
-
-    {
-        root.next = root;
-        root.prev = root;
-    }
+    private final LinkedList<TimingWheelTask> timingWheelTasks = new LinkedList<>();
 
     /**
      * 设置过期时间
@@ -53,13 +51,7 @@ public final class TimingWheelTaskList implements Delayed {
             if (timingWheelTask.timingWheelTaskList == null) {
                 timingWheelTask.timingWheelTaskList = this;
 
-                final TimingWheelTask oldNextTask = root.next;
-
-                timingWheelTask.next = oldNextTask;
-                oldNextTask.prev = timingWheelTask;
-
-                root.next = timingWheelTask;
-                timingWheelTask.prev = root;
+                timingWheelTasks.add(timingWheelTask);
             }
         }
     }
@@ -67,18 +59,13 @@ public final class TimingWheelTaskList implements Delayed {
     /**
      * 移除任务
      */
-    public void removeTask(TimingWheelTask timingWheelTask) {
+    public void removeTask(TimingWheelTask timingWheelTask, Iterator<?> iterator) {
         synchronized (this) {
             if (timingWheelTask.timingWheelTaskList.equals(this)) {
-                final TimingWheelTask oldPrevTask = timingWheelTask.prev;
-                final TimingWheelTask oldNextTask = timingWheelTask.next;
 
-                oldPrevTask.next = oldNextTask;
-                oldNextTask.prev = oldPrevTask;
-
-                timingWheelTask.prev = null;
-                timingWheelTask.next = null;
                 timingWheelTask.timingWheelTaskList = null;
+
+                iterator.remove();
             }
         }
     }
@@ -87,12 +74,13 @@ public final class TimingWheelTaskList implements Delayed {
      * 重新分配
      */
     public void flush(Consumer<TimingWheelTask<?>> flush) {
-        TimingWheelTask<?> timingWheelTask = root.next;
+        final Iterator<TimingWheelTask> iterator = this.timingWheelTasks.iterator();
 
-        while (!timingWheelTask.equals(root)) {
-            this.removeTask(timingWheelTask);
-            flush.accept(timingWheelTask);
-            timingWheelTask = root.next;
+        while (iterator.hasNext()) {
+            final TimingWheelTask task = iterator.next();
+
+            this.removeTask(task, iterator);
+            flush.accept(task);
         }
 
         expiration.getAndSet(-1L);
