@@ -1,12 +1,17 @@
 package cn.smilex.timingwheel;
 
+import lombok.Data;
 import lombok.Getter;
 
 /**
+ * 时间轮内部任务
+ *
  * @author siran.yao
+ * @author yanglujia
  * @date 2020/5/8:上午11:13
  */
-public class TimerTask<T> {
+@Data
+public class TimingWheelTask<T> {
     /**
      * 延迟时间
      */
@@ -22,33 +27,23 @@ public class TimerTask<T> {
     /**
      * 时间槽
      */
-    protected TimerTaskList timerTaskList;
+    protected TimingWheelTaskList timingWheelTaskList;
 
     /**
      * 下一个节点
      */
-    protected TimerTask<T> next;
+    protected TimingWheelTask<T> next;
 
     /**
      * 上一个节点
      */
-    protected TimerTask<T> prev;
+    protected TimingWheelTask<T> prev;
 
-    /**
-     * 描述
-     */
-    public String desc;
-
-    public TimerTask(Runnable task, long delayMs) {
+    public TimingWheelTask(Runnable task, long delayMs) {
         this.delayMs = System.currentTimeMillis() + delayMs;
         this.task = task;
-        this.timerTaskList = null;
+        this.timingWheelTaskList = null;
         this.next = null;
         this.prev = null;
-    }
-
-    @Override
-    public String toString() {
-        return desc;
     }
 }

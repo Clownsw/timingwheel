@@ -1,22 +1,28 @@
-package cn.smilex.timingwheel;
+package cn.smilex;
 
+import cn.smilex.timingwheel.CronTask;
+import cn.smilex.timingwheel.SystemTimer;
+import cn.smilex.timingwheel.TimingWheelTask;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author smilex
+ * test for timing wheel
+ *
+ * @author yanglujia
+ * @date 2024/1/22/15:08
  */
 @SuppressWarnings("unused")
 @Slf4j
-public class Main {
+public class App {
     static SystemTimer SYSTEM_TIMER = new SystemTimer();
 
     public static void main(String[] args) {
-        SYSTEM_TIMER.addTask(new TimerTask<>(
+        SYSTEM_TIMER.addTask(new TimingWheelTask<>(
                 () -> log.info("过期任务测试"),
                 -1000
         ));
 
-        SYSTEM_TIMER.addTask(new TimerTask<>(
+        SYSTEM_TIMER.addTask(new TimingWheelTask<>(
                 () -> log.info("两秒后执行"),
                 2000
         ));

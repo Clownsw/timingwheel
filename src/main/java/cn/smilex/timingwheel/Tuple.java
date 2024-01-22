@@ -5,12 +5,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author smilex
+ * 元组
+ *
+ * @author yanglujia
+ * @date 2024/1/22/15:04
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tuple<LEFT, RIGHT> {
+    /* left item */
     private LEFT left;
+    /* right item */
     private RIGHT right;
 }

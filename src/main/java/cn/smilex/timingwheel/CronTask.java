@@ -24,21 +24,35 @@ public class CronTask<T> {
     private final T userData;
     private final ExecutionTime executionTime;
 
-    public CronTask(Consumer<T> task, T userData, String cronString) {
+    public CronTask(final Consumer<T> task, final T userData, final String cronString) {
         this.task = task;
         this.userData = userData;
         this.executionTime = ExecutionTime.forCron(CRON_PARSER.parse(cronString));
     }
 
+    /**
+     * 以当前时间偏移计算下一次执行时间
+     *
+     * @return 下一次时间
+     * @author yanglujia
+     * @date 2024/1/22 15:11:10
+     */
     public long nextDelayMs() {
         ZonedDateTime zonedDateTime = this.executionTime.nextExecution(ZonedDateTime.now()).get();
         Timestamp timestamp = Timestamp.valueOf(zonedDateTime.toLocalDateTime());
         return timestamp.getTime() - System.currentTimeMillis();
     }
 
-    public TimerTask<CronTask<T>> toTimerTask() {
-        return new TimerTask<>(
-                new Task<>(
+    /**
+     * 转换到时间轮任务
+     *
+     * @return cn.smilex.timingwheel.TimingWheelTask<cn.smilex.timingwheel.CronTask < T>>
+     * @author yanglujia
+     * @date 2024/1/22 15:10:12
+     */
+    public TimingWheelTask<CronTask<T>> toTimerTask() {
+        return new TimingWheelTask<>(
+                new TimingWheelTaskAction<>(
                         this,
                         this.userData,
                         this.task

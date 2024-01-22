@@ -9,13 +9,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @author siran.yao
- * @date 2020/5/8:下午1:13
  * 对时间轮的包装
+ *
+ * @author siran.yao
+ * @author yanglujia
+ * @date 2024/1/22/14:59
  */
-@SuppressWarnings("InfiniteLoopStatement")
 @Slf4j
 public class SystemTimer {
+
     /**
      * 底层时间轮
      */
@@ -24,7 +26,7 @@ public class SystemTimer {
     /**
      * 一个Timer只有一个delayQueue
      */
-    private final DelayQueue<TimerTaskList> delayQueue = new DelayQueue<>();
+    private final DelayQueue<TimingWheelTaskList> delayQueue = new DelayQueue<>();
 
     /**
      * 过期任务执行线程
@@ -37,67 +39,76 @@ public class SystemTimer {
      * 构造函数
      */
     public SystemTimer() {
-        timeWheel = new TimingWheel(1, 20, System.currentTimeMillis(), delayQueue);
-        workerThreadPool = Executors.newFixedThreadPool(4);
+        this.timeWheel = new TimingWheel(1, 20, System.currentTimeMillis(), delayQueue);
 
-        // 轮询delayQueue获取过期任务线程
-        ExecutorService bossThreadPool = Executors.newFixedThreadPool(1);
+        this.workerThreadPool = Executors.newFixedThreadPool(4);
 
-        //20ms获取一次过期任务
-        bossThreadPool.submit(() -> {
+        // 20ms获取一次过期任务
+        final Thread bossThread = new Thread(() -> {
             while (true) {
-                this.advanceClock(20);
+                try {
+                    // 20ms获取一次过期任务
+                    this.advanceClock(20);
+                } catch (Exception e) {
+                    log.error("", e);
+                }
             }
         });
+
+        bossThread.start();
     }
 
     /**
      * 添加任务
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void addTask(TimerTask<?> timerTask) {
+    public void addTask(final TimingWheelTask<?> timingWheelTask) {
         try {
-            lock.lock();
+            this.lock.lock();
             // 添加失败任务直接执行
-            if (!timeWheel.addTask(timerTask)) {
-                if (timerTask.getTask() instanceof Task) {
+            if (!timeWheel.addTask(timingWheelTask)) {
+                if (timingWheelTask.getTask() instanceof TimingWheelTaskAction) {
                     try {
-                        Task<CronTask<?>, ?> tmpTask = (Task<CronTask<?>, ?>) timerTask.getTask();
+                        TimingWheelTaskAction<CronTask<?>, ?> tmpTimingWheelTaskAction = (TimingWheelTaskAction<CronTask<?>, ?>) timingWheelTask.getTask();
 
-                        Task<CronTask<?>, ?> nextTask = new Task(tmpTask.getData(), tmpTask.getUserData(), tmpTask.getRunnable());
-                        TimerTask<CronTask<?>> nextTimerTask = new TimerTask<>(nextTask, tmpTask.getData().nextDelayMs());
-                        addTask(nextTimerTask);
+                        TimingWheelTaskAction<CronTask<?>, ?> nextTimingWheelTaskAction = new TimingWheelTaskAction(tmpTimingWheelTaskAction.getData(), tmpTimingWheelTaskAction.getUserData(), tmpTimingWheelTaskAction.getRunnable());
+                        TimingWheelTask<CronTask<?>> nextTimingWheelTask = new TimingWheelTask<>(nextTimingWheelTaskAction, tmpTimingWheelTaskAction.getData().nextDelayMs());
+                        addTask(nextTimingWheelTask);
                     } catch (Exception e) {
                         log.error("", e);
                     }
                 }
 
-                workerThreadPool.submit(timerTask.getTask());
+                workerThreadPool.submit(timingWheelTask.getTask());
             }
         } catch (Exception e) {
             log.error("", e);
         } finally {
-            lock.unlock();
+            this.lock.unlock();
         }
     }
 
     /**
      * 获取过期任务
+     *
+     * @param timeout 拉取过程超时时间
      */
-    private void advanceClock(long timeout) {
+    private void advanceClock(@SuppressWarnings("SameParameterValue") final long timeout) {
         try {
-            lock.lock();
-            TimerTaskList timerTaskList = delayQueue.poll(timeout, TimeUnit.MILLISECONDS);
-            if (timerTaskList != null) {
+            this.lock.lock();
+
+            final TimingWheelTaskList timingWheelTaskList;
+
+            if ((timingWheelTaskList = delayQueue.poll(timeout, TimeUnit.MILLISECONDS)) != null) {
                 //推进时间
-                timeWheel.advanceClock(timerTaskList.getExpiration());
+                timeWheel.advanceClock(timingWheelTaskList.getExpiration());
                 //执行过期任务（包含降级操作）
-                timerTaskList.flush(this::addTask);
+                timingWheelTaskList.flush(this::addTask);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("", e);
         } finally {
-            lock.unlock();
+            this.lock.unlock();
         }
     }
 }

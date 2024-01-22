@@ -3,9 +3,11 @@ package cn.smilex.timingwheel;
 import java.util.concurrent.DelayQueue;
 
 /**
- * @Author: siran.yao
- * @time: 2020/5/8:上午11:07
  * 时间轮的实现
+ *
+ * @author siran.yao
+ * @author yanglujia
+ * @date 2024/1/22/15:04
  */
 public class TimingWheel {
 
@@ -27,7 +29,7 @@ public class TimingWheel {
     /**
      * 时间槽
      */
-    private final TimerTaskList[] timerTaskLists;
+    private final TimingWheelTaskList[] timingWheelTaskLists;
 
     /**
      * 当前时间
@@ -42,19 +44,19 @@ public class TimingWheel {
     /**
      * 一个Timer只有一个delayQueue
      */
-    private final DelayQueue<TimerTaskList> delayQueue;
+    private final DelayQueue<TimingWheelTaskList> delayQueue;
 
-    public TimingWheel(long tickMs, int wheelSize, long currentTime, DelayQueue<TimerTaskList> delayQueue) {
+    public TimingWheel(long tickMs, int wheelSize, long currentTime, DelayQueue<TimingWheelTaskList> delayQueue) {
         this.currentTime = currentTime;
         this.tickMs = tickMs;
         this.wheelSize = wheelSize;
         this.interval = tickMs * wheelSize;
-        this.timerTaskLists = new TimerTaskList[wheelSize];
+        this.timingWheelTaskLists = new TimingWheelTaskList[wheelSize];
         //currentTime为tickMs的整数倍 这里做取整操作
         this.currentTime = currentTime - (currentTime % tickMs);
         this.delayQueue = delayQueue;
         for (int i = 0; i < wheelSize; i++) {
-            timerTaskLists[i] = new TimerTaskList();
+            timingWheelTaskLists[i] = new TimingWheelTaskList();
         }
     }
 
@@ -75,8 +77,8 @@ public class TimingWheel {
     /**
      * 添加任务到时间轮
      */
-    public boolean addTask(TimerTask timerTask) {
-        long expiration = timerTask.getDelayMs();
+    public boolean addTask(TimingWheelTask timingWheelTask) {
+        long expiration = timingWheelTask.getDelayMs();
         // 过期任务直接执行
         if (expiration < currentTime + tickMs) {
             return false;
@@ -84,17 +86,17 @@ public class TimingWheel {
             // 当前时间轮可以容纳该任务 加入时间槽
             final int index = (int) ((expiration / tickMs) % wheelSize);
 
-            TimerTaskList timerTaskList = timerTaskLists[index];
-            timerTaskList.addTask(timerTask);
+            TimingWheelTaskList timingWheelTaskList = timingWheelTaskLists[index];
+            timingWheelTaskList.addTask(timingWheelTask);
 
-            if (timerTaskList.setExpiration(expiration)) {
+            if (timingWheelTaskList.setExpiration(expiration)) {
                 //添加到delayQueue中
-                delayQueue.offer(timerTaskList);
+                delayQueue.offer(timingWheelTaskList);
             }
         } else {
             //放到上一层的时间轮
             TimingWheel timeWheel = getOverflowWheel();
-            timeWheel.addTask(timerTask);
+            timeWheel.addTask(timingWheelTask);
         }
         return true;
     }
