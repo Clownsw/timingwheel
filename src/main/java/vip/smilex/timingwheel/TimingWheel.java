@@ -1,4 +1,4 @@
-package cn.smilex.timingwheel;
+package vip.smilex.timingwheel;
 
 import java.util.concurrent.DelayQueue;
 
@@ -9,7 +9,7 @@ import java.util.concurrent.DelayQueue;
  * @author yanglujia
  * @date 2024/1/22/15:04
  */
-public class TimingWheel {
+public final class TimingWheel {
 
     /**
      * 一个时间槽的范围
@@ -62,6 +62,10 @@ public class TimingWheel {
 
     /**
      * 创建或者获取上层时间轮
+     *
+     * @return vip.smilex.timingwheel.TimingWheel 上层时间轮
+     * @author yanglujia
+     * @date 2024/1/22 18:15:44
      */
     private TimingWheel getOverflowWheel() {
         if (overflowWheel == null) {
@@ -76,6 +80,11 @@ public class TimingWheel {
 
     /**
      * 添加任务到时间轮
+     *
+     * @param timingWheelTask 时间轮任务
+     * @return 是否添加成功
+     * @author yanglujia
+     * @date 2024/1/22 18:16:39
      */
     public boolean addTask(TimingWheelTask timingWheelTask) {
         long expiration = timingWheelTask.getDelayMs();
@@ -103,8 +112,12 @@ public class TimingWheel {
 
     /**
      * 推进时间
+     *
+     * @param timestamp 时间戳
+     * @author yanglujia
+     * @date 2024/1/22 18:17:04
      */
-    public void advanceClock(long timestamp) {
+    public void advanceClock(final long timestamp) {
         if (timestamp >= currentTime + tickMs) {
             currentTime = timestamp - (timestamp % tickMs);
             if (overflowWheel != null) {

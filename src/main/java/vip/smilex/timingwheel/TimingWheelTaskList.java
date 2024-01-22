@@ -1,4 +1,4 @@
-package cn.smilex.timingwheel;
+package vip.smilex.timingwheel;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,7 +15,7 @@ import java.util.function.Consumer;
  * @date 2024/1/22/15:12
  */
 @Slf4j
-public class TimingWheelTaskList implements Delayed {
+public final class TimingWheelTaskList implements Delayed {
     /**
      * 过期时间
      */

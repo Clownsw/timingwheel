@@ -1,4 +1,4 @@
-package cn.smilex.timingwheel;
+package vip.smilex.timingwheel;
 
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
@@ -12,11 +12,14 @@ import java.time.ZonedDateTime;
 import java.util.function.Consumer;
 
 /**
- * @author smilex
+ * 时间轮cron类型定时任务
+ *
+ * @author yanglujia
+ * @date 2024/1/22/18:11
  */
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 @Slf4j
-public class CronTask<T> {
+public class TimingWheelCronTask<T> {
     private static final CronDefinition CRON_DEFINITION = CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING);
     private static final CronParser CRON_PARSER = new CronParser(CRON_DEFINITION);
 
@@ -24,7 +27,7 @@ public class CronTask<T> {
     private final T userData;
     private final ExecutionTime executionTime;
 
-    public CronTask(final Consumer<T> task, final T userData, final String cronString) {
+    public TimingWheelCronTask(final Consumer<T> task, final T userData, final String cronString) {
         this.task = task;
         this.userData = userData;
         this.executionTime = ExecutionTime.forCron(CRON_PARSER.parse(cronString));
@@ -50,7 +53,7 @@ public class CronTask<T> {
      * @author yanglujia
      * @date 2024/1/22 15:10:12
      */
-    public TimingWheelTask<CronTask<T>> toTimerTask() {
+    public TimingWheelTask<TimingWheelCronTask<T>> toTimerTask() {
         return new TimingWheelTask<>(
                 new TimingWheelTaskAction<>(
                         this,

@@ -1,4 +1,4 @@
-package cn.smilex.timingwheel;
+package vip.smilex.timingwheel;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import java.util.function.Consumer;
  */
 @Slf4j
 @Data
-public class TimingWheelTaskAction<T, K> implements Runnable {
+public final class TimingWheelTaskAction<T, K> implements Runnable {
     private final T data;
     private final K userData;
     private final Consumer<K> runnable;

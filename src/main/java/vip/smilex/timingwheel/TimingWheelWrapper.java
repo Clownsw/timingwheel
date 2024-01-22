@@ -1,4 +1,4 @@
-package cn.smilex.timingwheel;
+package vip.smilex.timingwheel;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -9,14 +9,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * 对时间轮的包装
+ * 时间轮的包装
  *
  * @author siran.yao
  * @author yanglujia
  * @date 2024/1/22/14:59
  */
 @Slf4j
-public class SystemTimer {
+public final class TimingWheelWrapper {
 
     /**
      * 底层时间轮
@@ -38,7 +38,7 @@ public class SystemTimer {
     /**
      * 构造函数
      */
-    public SystemTimer() {
+    public TimingWheelWrapper() {
         this.timeWheel = new TimingWheel(1, 20, System.currentTimeMillis(), delayQueue);
 
         this.workerThreadPool = Executors.newFixedThreadPool(4);
@@ -60,6 +60,10 @@ public class SystemTimer {
 
     /**
      * 添加任务
+     *
+     * @param timingWheelTask 任务实例
+     * @author yanglujia
+     * @date 2024/1/22 18:13:44
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void addTask(final TimingWheelTask<?> timingWheelTask) {
@@ -69,10 +73,10 @@ public class SystemTimer {
             if (!timeWheel.addTask(timingWheelTask)) {
                 if (timingWheelTask.getTask() instanceof TimingWheelTaskAction) {
                     try {
-                        TimingWheelTaskAction<CronTask<?>, ?> tmpTimingWheelTaskAction = (TimingWheelTaskAction<CronTask<?>, ?>) timingWheelTask.getTask();
+                        TimingWheelTaskAction<TimingWheelCronTask<?>, ?> tmpTimingWheelTaskAction = (TimingWheelTaskAction<TimingWheelCronTask<?>, ?>) timingWheelTask.getTask();
 
-                        TimingWheelTaskAction<CronTask<?>, ?> nextTimingWheelTaskAction = new TimingWheelTaskAction(tmpTimingWheelTaskAction.getData(), tmpTimingWheelTaskAction.getUserData(), tmpTimingWheelTaskAction.getRunnable());
-                        TimingWheelTask<CronTask<?>> nextTimingWheelTask = new TimingWheelTask<>(nextTimingWheelTaskAction, tmpTimingWheelTaskAction.getData().nextDelayMs());
+                        TimingWheelTaskAction<TimingWheelCronTask<?>, ?> nextTimingWheelTaskAction = new TimingWheelTaskAction(tmpTimingWheelTaskAction.getData(), tmpTimingWheelTaskAction.getUserData(), tmpTimingWheelTaskAction.getRunnable());
+                        TimingWheelTask<TimingWheelCronTask<?>> nextTimingWheelTask = new TimingWheelTask<>(nextTimingWheelTaskAction, tmpTimingWheelTaskAction.getData().nextDelayMs());
                         addTask(nextTimingWheelTask);
                     } catch (Exception e) {
                         log.error("", e);
@@ -89,9 +93,11 @@ public class SystemTimer {
     }
 
     /**
-     * 获取过期任务
+     * 推进时间轮并弹出过期任务
      *
      * @param timeout 拉取过程超时时间
+     * @author yanglujia
+     * @date 2024/1/22 18:14:20
      */
     private void advanceClock(@SuppressWarnings("SameParameterValue") final long timeout) {
         try {
@@ -100,9 +106,9 @@ public class SystemTimer {
             final TimingWheelTaskList timingWheelTaskList;
 
             if ((timingWheelTaskList = delayQueue.poll(timeout, TimeUnit.MILLISECONDS)) != null) {
-                //推进时间
+                // 推进时间
                 timeWheel.advanceClock(timingWheelTaskList.getExpiration());
-                //执行过期任务（包含降级操作）
+                // 执行过期任务（包含降级操作）
                 timingWheelTaskList.flush(this::addTask);
             }
         } catch (Exception e) {

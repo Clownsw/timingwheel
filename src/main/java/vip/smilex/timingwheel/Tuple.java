@@ -1,4 +1,4 @@
-package cn.smilex.timingwheel;
+package vip.smilex.timingwheel;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
