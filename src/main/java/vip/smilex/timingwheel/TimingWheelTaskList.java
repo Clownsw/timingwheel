@@ -27,8 +27,8 @@ public final class TimingWheelTaskList implements Delayed {
     private final TimingWheelTask root = new TimingWheelTask(null, -1L);
 
     {
-        root.prev = root;
         root.next = root;
+        root.prev = root;
     }
 
     /**
@@ -52,11 +52,14 @@ public final class TimingWheelTaskList implements Delayed {
         synchronized (this) {
             if (timingWheelTask.timingWheelTaskList == null) {
                 timingWheelTask.timingWheelTaskList = this;
-                TimingWheelTask tail = root.prev;
-                timingWheelTask.next = root;
-                timingWheelTask.prev = tail;
-                tail.next = timingWheelTask;
-                root.prev = timingWheelTask;
+
+                final TimingWheelTask oldNextTask = root.next;
+
+                timingWheelTask.next = oldNextTask;
+                oldNextTask.prev = timingWheelTask;
+
+                root.next = timingWheelTask;
+                timingWheelTask.prev = root;
             }
         }
     }
@@ -67,11 +70,15 @@ public final class TimingWheelTaskList implements Delayed {
     public void removeTask(TimingWheelTask timingWheelTask) {
         synchronized (this) {
             if (timingWheelTask.timingWheelTaskList.equals(this)) {
-                timingWheelTask.next.prev = timingWheelTask.prev;
-                timingWheelTask.prev.next = timingWheelTask.next;
-                timingWheelTask.timingWheelTaskList = null;
-                timingWheelTask.next = null;
+                final TimingWheelTask oldPrevTask = timingWheelTask.prev;
+                final TimingWheelTask oldNextTask = timingWheelTask.next;
+
+                oldPrevTask.next = oldNextTask;
+                oldNextTask.prev = oldPrevTask;
+
                 timingWheelTask.prev = null;
+                timingWheelTask.next = null;
+                timingWheelTask.timingWheelTaskList = null;
             }
         }
     }

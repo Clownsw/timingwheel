@@ -1,5 +1,7 @@
 package vip.smilex.timingwheel;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.DelayQueue;
 
 /**
@@ -9,6 +11,7 @@ import java.util.concurrent.DelayQueue;
  * @author yanglujia
  * @date 2024/1/22/15:04
  */
+@Slf4j
 public final class TimingWheel {
 
     /**
@@ -71,6 +74,7 @@ public final class TimingWheel {
         if (overflowWheel == null) {
             synchronized (this) {
                 if (overflowWheel == null) {
+                    log.info("{}-{}", overflowWheel, interval);
                     overflowWheel = new TimingWheel(interval, wheelSize, currentTime, delayQueue);
                 }
             }
