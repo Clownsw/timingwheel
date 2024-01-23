@@ -24,7 +24,7 @@ public final class TimingWheelWrapper {
     private final TimingWheel timeWheel;
 
     /**
-     * 一个Timer只有一个delayQueue
+     * 一个时间轮只有一个延迟队列
      */
     private final DelayQueue<TimingWheelTaskList> delayQueue = new DelayQueue<>();
 
