@@ -17,12 +17,12 @@ public class App {
     static TimingWheelWrapper SYSTEM_TIMER = new TimingWheelWrapper();
 
     public static void main(String[] args) {
-        SYSTEM_TIMER.addTask(new TimingWheelTask<>(
+        SYSTEM_TIMER.addTask(new TimingWheelTask(
                 () -> log.info("过期任务测试"),
                 -1000
         ));
 
-        SYSTEM_TIMER.addTask(new TimingWheelTask<>(
+        SYSTEM_TIMER.addTask(new TimingWheelTask(
                 () -> log.info("两秒后执行"),
                 2000
         ));

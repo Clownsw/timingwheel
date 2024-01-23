@@ -53,8 +53,8 @@ public class TimingWheelCronTask<T> {
      * @author yanglujia
      * @date 2024/1/22 15:10:12
      */
-    public TimingWheelTask<TimingWheelCronTask<T>> toTimerTask() {
-        return new TimingWheelTask<>(
+    public TimingWheelTask toTimerTask() {
+        return new TimingWheelTask(
                 new TimingWheelTaskAction<>(
                         this,
                         this.userData,

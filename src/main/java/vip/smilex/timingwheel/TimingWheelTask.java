@@ -11,7 +11,7 @@ import lombok.Getter;
  * @date 2020/5/8:上午11:13
  */
 @Data
-public class TimingWheelTask<T> {
+public class TimingWheelTask {
     /**
      * 延迟时间
      */

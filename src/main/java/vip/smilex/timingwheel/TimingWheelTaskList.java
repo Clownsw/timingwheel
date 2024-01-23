@@ -27,7 +27,7 @@ public final class TimingWheelTaskList implements Delayed {
     /**
      * 时间轮任务链表
      */
-    private final LinkedList<TimingWheelTask<?>> timingWheelTasks = new LinkedList<>();
+    private final LinkedList<TimingWheelTask> timingWheelTasks = new LinkedList<>();
 
     /**
      * 设置过期时间
@@ -50,7 +50,7 @@ public final class TimingWheelTaskList implements Delayed {
      * @author yanglujia
      * @date 2024/1/23 11:08:23
      */
-    public void addTask(final TimingWheelTask<?> timingWheelTask) {
+    public void addTask(final TimingWheelTask timingWheelTask) {
         synchronized (this) {
             if (timingWheelTask.timingWheelTaskList == null) {
                 timingWheelTask.timingWheelTaskList = this;
@@ -67,11 +67,11 @@ public final class TimingWheelTaskList implements Delayed {
      * @author yanglujia
      * @date 2024/1/23 11:07:50
      */
-    public void flush(Consumer<TimingWheelTask<?>> flush) {
-        final Iterator<TimingWheelTask<?>> iterator = this.timingWheelTasks.iterator();
+    public void flush(Consumer<TimingWheelTask> flush) {
+        final Iterator<TimingWheelTask> iterator = this.timingWheelTasks.iterator();
 
         while (iterator.hasNext()) {
-            final TimingWheelTask<?> task = iterator.next();
+            final TimingWheelTask task = iterator.next();
 
             synchronized (this) {
                 task.timingWheelTaskList = null;

@@ -66,7 +66,7 @@ public final class TimingWheelWrapper {
      * @date 2024/1/22 18:13:44
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void addTask(final TimingWheelTask<?> timingWheelTask) {
+    public void addTask(final TimingWheelTask timingWheelTask) {
         try {
             this.lock.lock();
             // 添加失败任务直接执行
@@ -76,7 +76,7 @@ public final class TimingWheelWrapper {
                         TimingWheelTaskAction<TimingWheelCronTask<?>, ?> tmpTimingWheelTaskAction = (TimingWheelTaskAction<TimingWheelCronTask<?>, ?>) timingWheelTask.getTask();
 
                         TimingWheelTaskAction<TimingWheelCronTask<?>, ?> nextTimingWheelTaskAction = new TimingWheelTaskAction(tmpTimingWheelTaskAction.getData(), tmpTimingWheelTaskAction.getUserData(), tmpTimingWheelTaskAction.getRunnable());
-                        TimingWheelTask<TimingWheelCronTask<?>> nextTimingWheelTask = new TimingWheelTask<>(nextTimingWheelTaskAction, tmpTimingWheelTaskAction.getData().nextDelayMs());
+                        TimingWheelTask nextTimingWheelTask = new TimingWheelTask(nextTimingWheelTaskAction, tmpTimingWheelTaskAction.getData().nextDelayMs());
                         addTask(nextTimingWheelTask);
                     } catch (Exception e) {
                         log.error("", e);
