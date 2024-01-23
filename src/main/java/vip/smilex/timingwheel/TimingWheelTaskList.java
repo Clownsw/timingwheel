@@ -25,7 +25,7 @@ public final class TimingWheelTaskList implements Delayed {
     private final AtomicLong expiration = new AtomicLong(-1L);
 
     /**
-     * 时间轮任务
+     * 时间轮任务链表
      */
     private final LinkedList<TimingWheelTask<?>> timingWheelTasks = new LinkedList<>();
 
@@ -44,9 +44,13 @@ public final class TimingWheelTaskList implements Delayed {
     }
 
     /**
-     * 新增任务
+     * 添加时间轮任务到任务链表中
+     *
+     * @param timingWheelTask 时间轮任务
+     * @author yanglujia
+     * @date 2024/1/23 11:08:23
      */
-    public void addTask(TimingWheelTask<?> timingWheelTask) {
+    public void addTask(final TimingWheelTask<?> timingWheelTask) {
         synchronized (this) {
             if (timingWheelTask.timingWheelTaskList == null) {
                 timingWheelTask.timingWheelTaskList = this;
@@ -57,7 +61,11 @@ public final class TimingWheelTaskList implements Delayed {
     }
 
     /**
-     * 重新分配
+     * 将过期任务弹出
+     *
+     * @param flush 弹出函数
+     * @author yanglujia
+     * @date 2024/1/23 11:07:50
      */
     public void flush(Consumer<TimingWheelTask<?>> flush) {
         final Iterator<TimingWheelTask<?>> iterator = this.timingWheelTasks.iterator();
@@ -77,6 +85,14 @@ public final class TimingWheelTaskList implements Delayed {
         expiration.getAndSet(-1L);
     }
 
+    /**
+     * 获取剩余延迟时间(小于等于0则表示可以被执行)
+     *
+     * @param unit 时间单位
+     * @return 剩余延迟时间
+     * @author yanglujia
+     * @date 2024/1/23 11:06:38
+     */
     @Override
     public long getDelay(TimeUnit unit) {
         return Math.max(0, unit.convert(expiration.get() - System.currentTimeMillis(), TimeUnit.MILLISECONDS));
