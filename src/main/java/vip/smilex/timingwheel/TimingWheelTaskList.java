@@ -27,7 +27,7 @@ public final class TimingWheelTaskList implements Delayed {
     /**
      * 时间轮任务
      */
-    private final LinkedList<TimingWheelTask> timingWheelTasks = new LinkedList<>();
+    private final LinkedList<TimingWheelTask<?>> timingWheelTasks = new LinkedList<>();
 
     /**
      * 设置过期时间
@@ -46,7 +46,7 @@ public final class TimingWheelTaskList implements Delayed {
     /**
      * 新增任务
      */
-    public void addTask(TimingWheelTask timingWheelTask) {
+    public void addTask(TimingWheelTask<?> timingWheelTask) {
         synchronized (this) {
             if (timingWheelTask.timingWheelTaskList == null) {
                 timingWheelTask.timingWheelTaskList = this;
@@ -57,29 +57,20 @@ public final class TimingWheelTaskList implements Delayed {
     }
 
     /**
-     * 移除任务
-     */
-    public void removeTask(TimingWheelTask timingWheelTask, Iterator<?> iterator) {
-        synchronized (this) {
-            if (timingWheelTask.timingWheelTaskList.equals(this)) {
-
-                timingWheelTask.timingWheelTaskList = null;
-
-                iterator.remove();
-            }
-        }
-    }
-
-    /**
      * 重新分配
      */
     public void flush(Consumer<TimingWheelTask<?>> flush) {
-        final Iterator<TimingWheelTask> iterator = this.timingWheelTasks.iterator();
+        final Iterator<TimingWheelTask<?>> iterator = this.timingWheelTasks.iterator();
 
         while (iterator.hasNext()) {
-            final TimingWheelTask task = iterator.next();
+            final TimingWheelTask<?> task = iterator.next();
 
-            this.removeTask(task, iterator);
+            synchronized (this) {
+                task.timingWheelTaskList = null;
+
+                iterator.remove();
+            }
+
             flush.accept(task);
         }
 
