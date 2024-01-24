@@ -32,8 +32,8 @@ public final class TimingWheelTaskList implements Delayed {
     /**
      * 设置过期时间
      */
-    public boolean setExpiration(long expire) {
-        return expiration.getAndSet(expire) != expire;
+    public void setExpiration(long expire) {
+        expiration.getAndSet(expire);
     }
 
     /**

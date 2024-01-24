@@ -102,10 +102,11 @@ public final class TimingWheel {
             TimingWheelTaskList timingWheelTaskList = timingWheelTaskLists[index];
             timingWheelTaskList.addTask(timingWheelTask);
 
-            if (timingWheelTaskList.setExpiration(expiration)) {
-                //添加到delayQueue中
-                delayQueue.offer(timingWheelTaskList);
-            }
+            // 设置过期时间
+            timingWheelTaskList.setExpiration(expiration);
+
+            // 添加到延迟队列中中
+            delayQueue.offer(timingWheelTaskList);
         } else {
             //放到上一层的时间轮
             TimingWheel timeWheel = getOverflowWheel();
