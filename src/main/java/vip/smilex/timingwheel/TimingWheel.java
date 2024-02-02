@@ -74,7 +74,6 @@ public final class TimingWheel {
         if (overflowWheel == null) {
             synchronized (this) {
                 if (overflowWheel == null) {
-                    log.info("{}-{}", overflowWheel, interval);
                     overflowWheel = new TimingWheel(interval, wheelSize, currentTime, delayQueue);
                 }
             }
