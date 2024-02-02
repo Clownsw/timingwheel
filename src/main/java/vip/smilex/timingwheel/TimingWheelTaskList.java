@@ -50,13 +50,11 @@ public final class TimingWheelTaskList implements Delayed {
      * @author yanglujia
      * @date 2024/1/23 11:08:23
      */
-    public void addTask(final TimingWheelTask timingWheelTask) {
-        synchronized (this) {
-            if (timingWheelTask.timingWheelTaskList == null) {
-                timingWheelTask.timingWheelTaskList = this;
+    public synchronized void addTask(final TimingWheelTask timingWheelTask) {
+        if (timingWheelTask.timingWheelTaskList == null) {
+            timingWheelTask.timingWheelTaskList = this;
 
-                timingWheelTasks.add(timingWheelTask);
-            }
+            timingWheelTasks.add(timingWheelTask);
         }
     }
 

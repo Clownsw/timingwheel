@@ -90,7 +90,7 @@ public final class TimingWheel {
      * @author yanglujia
      * @date 2024/1/22 18:16:39
      */
-    public boolean addTask(final TimingWheelTask timingWheelTask) {
+    public synchronized boolean addTask(final TimingWheelTask timingWheelTask) {
         long expiration = timingWheelTask.getDelayMs();
         // 过期任务直接执行
         if (expiration < currentTime + tickMs) {

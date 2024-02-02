@@ -6,7 +6,6 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 时间轮的包装
@@ -33,7 +32,10 @@ public final class TimingWheelWrapper {
      */
     private final ExecutorService workerThreadPool;
 
-    private final ReentrantLock lock = new ReentrantLock();
+    /**
+     * 任务轮训线程
+     */
+    private final Thread bossThread;
 
     /**
      * 构造函数
@@ -44,7 +46,7 @@ public final class TimingWheelWrapper {
         this.workerThreadPool = Executors.newFixedThreadPool(4);
 
         // 20ms获取一次过期任务
-        final Thread bossThread = new Thread(() -> {
+        this.bossThread = new Thread(() -> {
             while (true) {
                 try {
                     // 20ms获取一次过期任务
@@ -55,7 +57,7 @@ public final class TimingWheelWrapper {
             }
         });
 
-        bossThread.start();
+        this.bossThread.start();
     }
 
     /**
@@ -68,7 +70,6 @@ public final class TimingWheelWrapper {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void addTask(final TimingWheelTask timingWheelTask) {
         try {
-            this.lock.lock();
             // 添加失败任务直接执行
             if (!timeWheel.addTask(timingWheelTask)) {
                 if (timingWheelTask.getTask() instanceof TimingWheelTaskAction) {
@@ -87,8 +88,6 @@ public final class TimingWheelWrapper {
             }
         } catch (Exception e) {
             log.error("", e);
-        } finally {
-            this.lock.unlock();
         }
     }
 
@@ -101,8 +100,6 @@ public final class TimingWheelWrapper {
      */
     private void advanceClock(@SuppressWarnings("SameParameterValue") final long timeout) {
         try {
-            this.lock.lock();
-
             final TimingWheelTaskList timingWheelTaskList;
 
             if ((timingWheelTaskList = delayQueue.poll(timeout, TimeUnit.MILLISECONDS)) != null) {
@@ -113,8 +110,17 @@ public final class TimingWheelWrapper {
             }
         } catch (Exception e) {
             log.error("", e);
-        } finally {
-            this.lock.unlock();
         }
+    }
+
+    /**
+     * 立即关闭
+     *
+     * @author yanglujia
+     * @date 2024/2/2 14:56:26
+     */
+    public void shutdownNow() {
+        this.bossThread.interrupt();
+        this.workerThreadPool.shutdownNow();
     }
 }
